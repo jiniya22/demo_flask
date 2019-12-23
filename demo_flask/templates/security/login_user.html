@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>DEMO 로그인</title>
 <link rel="shortcut icon" href="/static/img/flask.png">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
@@ -67,7 +68,8 @@ hr.separator {
 	<div class="login_wrapper">
 		<section>
             <h1><img src="/static/img/flask.png" width="50" height="auto" alt="demo" id="btn_loginHome"></h1>
-            <form method="post" action="/">
+            <form method="post" action="/login">
+                <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}"/>
                 <div>
                     <input type="text" name="email" class="form-control" placeholder="email" autocomplete="off" required/>
                 </div>
