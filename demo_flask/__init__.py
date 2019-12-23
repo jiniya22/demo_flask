@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import RoleMixin, UserMixin, Security, SQLAlchemyUserDatastore, login_required
-from flask_wtf.csrf import CsrfProtect
+from flask_wtf.csrf import CSRFProtect
 from flask_security.decorators import roles_required
 
 
@@ -12,7 +12,8 @@ app.config['SECRET_KEY'] = 'jini-secret'
 app.config['SECURITY_PASSWORD_SALT'] = 'jini-salt'
 app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['SQLALCHEMY_DATABASE_URI']= 'mysql+mysqldb://test:test@localhost:3306/jiniworld_flask?charset=utf8'
-CsrfProtect(app)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'disabled'
+CSRFProtect(app)
 
 db = SQLAlchemy(app)
 
