@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_security import RoleMixin, UserMixin, Security, SQLAlchemyUserDatastore, login_required
 from flask_wtf.csrf import CSRFProtect
 from flask_security.decorators import roles_required
-
+from flask_security.core import current_user
 
 
 app = Flask(__name__)
@@ -13,13 +13,10 @@ app.config['SECURITY_PASSWORD_SALT'] = 'jini-salt'
 app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['SQLALCHEMY_DATABASE_URI']= 'mysql+mysqldb://test:test@localhost:3306/jiniworld_flask?charset=utf8'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'disabled'
+
 CSRFProtect(app)
 
 db = SQLAlchemy(app)
-
-roles_users = db.Table('roles_users',
-        db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-        db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
 
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,8 +30,14 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(50))
     create_timestamp = db.Column(db.DateTime())
     active = db.Column(db.Boolean())
-    roles = db.relationship('Role', secondary=roles_users,
+    roles = db.relationship('Role', secondary='roles_users',
                             backref=db.backref('users', lazy='dynamic'))
+
+class RolesUsers(db.Model):
+    __tablename__ = 'roles_users'
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
+    role_id = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
 
     def get_security_payload(self):
         return {
@@ -58,9 +61,16 @@ security = Security(app, user_datastore)
 
 # Views
 @app.route('/')
-@login_required
 def home():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
     return render_template('views/main.html', title='view main')
+
+
+@app.route('/login')
+def login():
+    return render_template('security/login_user.html')
+
 
 @app.route('/users')
 @login_required
@@ -68,6 +78,7 @@ def home():
 def users():
     args = {'title': 'users', 'msg': '사용자 정보는 ROLE_ADMIN 권한을 보유한 사용자만 조회할 수 있다.'}
     return render_template('views/main.html', **args)
+
 
 @app.route('/stores')
 @login_required
