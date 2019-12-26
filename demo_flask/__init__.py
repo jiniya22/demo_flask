@@ -32,7 +32,7 @@ def login():
 def home():
     if not current_user.is_authenticated:
         return redirect(url_for('login'))
-    return render_template('views/main.html', title='view main')
+    return render_template('views/main.html', title='home')
 
 
 @app.route('/users')

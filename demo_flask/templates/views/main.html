@@ -1,13 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>main</title>
-    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
-	<link href="https://fonts.googleapis.com/css?family=Noto+Sans+KR:300,400,500,700,900&amp;subset=korean" rel="stylesheet">
+<meta charset="UTF-8">
+<title>main</title>
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+<link href="https://fonts.googleapis.com/css?family=Noto+Sans+KR:300,400,500,700,900&amp;subset=korean" rel="stylesheet">
+<style>
+ul {
+    list-style-type: none;
+}
+ul li {
+    display: inline-block;
+}
+ul li a {
+    text-decoration: none;
+}
+ul li a.active {
+    color: red;
+}
+</style>
 </head>
 <body>
 <h1>{{title}}</h1>
+<ul>
+    <li><a href="/" class="{{'active' if title == 'home'}}">홈</a></li>
+    <li><a href="/users" class="{{'active' if title == 'users'}}">사용자</a></li>
+    <li><a href="/stores" class="{{'active' if title == 'stores'}}">가맹점</a></li>
+</ul>
 <form id="logoutFrm" action="/logout" method="post" style="display: inline-block;">
     <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}"/>
     <a href="#" onclick="document.getElementById('logoutFrm').submit()" data-toggle="tooltip" data-placement="logout" title="Logout"><i class="fa fa-power-off"></i></a>
