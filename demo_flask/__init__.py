@@ -1,43 +1,54 @@
 from flask import Flask, render_template, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from flask_security import RoleMixin, UserMixin, Security, SQLAlchemyUserDatastore, login_required
+from flask_security import RoleMixin, UserMixin, Security, SQLAlchemySessionUserDatastore, login_required
 from flask_wtf.csrf import CSRFProtect
 from flask_security.decorators import roles_required
 from flask_security.core import current_user
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship, backref
+
+engine = create_engine('mysql+mysqldb://test:test@localhost:3306/jiniworld_flask?charset=utf8', echo=False, convert_unicode=True)
+db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+
+Base = declarative_base()
+Base.query = db_session.query_property()
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'jini-secret'
 app.config['SECURITY_PASSWORD_SALT'] = 'jini-salt'
 app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
-app.config['SQLALCHEMY_DATABASE_URI']= 'mysql+mysqldb://test:test@localhost:3306/jiniworld_flask?charset=utf8'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'disabled'
+app.config['SECURITY_LOGIN_USER_TEMPLATE'] = 'security/login_user.html'
+
 
 CSRFProtect(app)
 
-db = SQLAlchemy(app)
+class Role(Base, RoleMixin):
+    __tablename__ = 'role'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(20), unique=True)
+    description = Column(String(50))
 
-class Role(db.Model, RoleMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20), unique=True)
-    description = db.Column(db.String(50))
+class User(Base, UserMixin):
+    __tablename__ = 'user'
+    id = Column(Integer, primary_key=True)
+    email = Column(String(100), unique=True)
+    password = Column(String(150))
+    name = Column(String(50))
+    create_timestamp = Column(DateTime())
+    active = Column(Boolean())
+    roles = relationship('Role', secondary='roles_users',
+                            backref=backref('users', lazy='dynamic'))
 
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(150))
-    name = db.Column(db.String(50))
-    create_timestamp = db.Column(db.DateTime())
-    active = db.Column(db.Boolean())
-    roles = db.relationship('Role', secondary='roles_users',
-                            backref=db.backref('users', lazy='dynamic'))
-
-class RolesUsers(db.Model):
+class RolesUsers(Base):
     __tablename__ = 'roles_users'
-    id = db.Column(db.Integer(), primary_key=True)
-    user_id = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
-    role_id = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+    id = Column(Integer(), primary_key=True)
+    user_id = Column('user_id', Integer(), ForeignKey('user.id'))
+    role_id = Column('role_id', Integer(), ForeignKey('role.id'))
 
     def get_security_payload(self):
         return {
@@ -46,7 +57,7 @@ class RolesUsers(db.Model):
             'email': self.email
         }
 
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
 security = Security(app, user_datastore)
 
 
