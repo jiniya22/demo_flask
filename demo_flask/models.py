@@ -13,6 +13,13 @@ class Role(Base, RoleMixin):
     def __repr__(self):
         return '<Role %r> %r %r' % (self.id, self.name, self.description)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description
+        }
+
 
 class User(Base, UserMixin):
     __tablename__ = 'user'
