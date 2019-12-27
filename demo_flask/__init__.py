@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'jini-secret'
 app.config['SECURITY_PASSWORD_SALT'] = 'jini-salt'
 app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'disabled'
-app.config['SECURITY_LOGIN_USER_TEMPLATE'] = 'security/login_user.html'
+app.config['SECURITY_LOGIN_USER_TEMPLATE'] = 'security/login_user2.html'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 
 CSRFProtect(app)
@@ -23,19 +23,21 @@ user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
 security = Security(app, user_datastore)
 
 
-@app.route('/login', methods=['GET'])
-def login():
-    return render_template('security/login_user.html')
-
-
 @app.route('/')
-def home():
+def index():
     if not current_user.is_authenticated:
-        return redirect(url_for('login'))
+        return redirect('/login')
+    return redirect(url_for('home'))
+
+
+@app.route('/views')
+@login_required
+@roles_required('ROLE_VIEW')
+def home():
     return render_template('views/main.html', title='home')
 
 
-@app.route('/users')
+@app.route('/views/users')
 @login_required
 @roles_required('ROLE_ADMIN')
 def users():
@@ -43,7 +45,7 @@ def users():
     return render_template('views/main.html', **args)
 
 
-@app.route('/stores')
+@app.route('/views/stores')
 @login_required
 @roles_required('ROLE_VIEW')
 def stores():
@@ -54,4 +56,4 @@ def stores():
 def logout():
     from flask_security.utils import logout_user
     logout_user()
-    return redirect(url_for('login'))
+    return redirect('/login')

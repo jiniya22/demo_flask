@@ -23,9 +23,9 @@ ul li a.active {
 <body>
 <h1>{{title}}</h1>
 <ul>
-    <li><a href="/" class="{{'active' if title == 'home'}}">홈</a></li>
-    <li><a href="/users" class="{{'active' if title == 'users'}}">사용자</a></li>
-    <li><a href="/stores" class="{{'active' if title == 'stores'}}">가맹점</a></li>
+    <li><a href="/views" class="{{'active' if title == 'home'}}">홈</a></li>
+    <li><a href="/views/users" class="{{'active' if title == 'users'}}">사용자</a></li>
+    <li><a href="/views/stores" class="{{'active' if title == 'stores'}}">가맹점</a></li>
 </ul>
 <form id="logoutFrm" action="/logout" method="post" style="display: inline-block;">
     <input type="hidden" name="csrf_token" id="csrf_token" value="{{ csrf_token() }}"/>
