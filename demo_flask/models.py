@@ -29,8 +29,7 @@ class User(Base, UserMixin):
     name = Column(String(50))
     create_timestamp = Column(DateTime())
     active = Column(Boolean())
-    roles = relationship('Role', secondary='roles_users',
-                         backref=backref('users', lazy='dynamic'))
+    roles = relationship('Role', secondary='user_role', backref=backref('user', lazy='dynamic'))
 
     def __repr__(self):
         return '<User %r> %r %r' % (self.id, self.name, self.email)
@@ -43,14 +42,14 @@ class User(Base, UserMixin):
         }
 
 
-class RolesUsers(Base):
-    __tablename__ = 'roles_users'
+class UserRole(Base):
+    __tablename__ = 'user_role'
     id = Column(Integer(), primary_key=True)
     user_id = Column('user_id', Integer(), ForeignKey('user.id'))
     role_id = Column('role_id', Integer(), ForeignKey('role.id'))
 
     def __repr__(self):
-        return '<RolesUsers %r> %r %r' % (self.id, self.user_id, self.role_id)
+        return '<UserRole %r> %r %r' % (self.id, self.user_id, self.role_id)
 
     def to_dict(self):
         return {
